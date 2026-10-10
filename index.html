@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sadhana Audit & Curriculum Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .matrix-btn { transition: all 0.15s ease-in-out; }
+    .matrix-btn:active { transform: scale(0.92); }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOP NAVIGATION ================= -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center font-bold text-slate-950 shadow-md">
+          <i class="fa-solid fa-om text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base md:text-lg leading-tight tracking-tight">Sādhana Audit Portal</h1>
+          <p class="text-xs text-amber-400/90 font-medium hidden sm:block">Thursday 8:30 PM Sangha | Friday–Thursday Cycle</p>
+        </div>
+      </div>
+      <div id="userHeaderBadge" class="hidden flex items-center gap-2">
+        <div class="text-right">
+          <p id="navUserName" class="text-xs md:text-sm font-semibold text-slate-200 leading-none"></p>
+          <span id="navRoleBadge" class="text-[10px] font-medium text-amber-400">Devotee</span>
+        </div>
+        <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-400 transition" title="Sign Out">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+    <!-- 1. LOGIN SCREEN -->
+    <section id="loginSection" class="max-w-md w-full mx-auto py-8">
+      <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 md:p-8 shadow-2xl">
+        <div class="text-center mb-6">
+          <div class="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3">
+            <i class="fa-solid fa-user-lock text-xl"></i>
+          </div>
+          <h2 class="text-xl font-bold">Devotee Portal Login</h2>
+          <p class="text-xs text-slate-400 mt-1">Enter your enrolled email to access your weekly audit</p>
+        </div>
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <i class="fa-solid fa-envelope"></i>
+              </span>
+              <input type="email" id="loginEmail" required placeholder="devotee@example.com"
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 text-slate-100 placeholder-slate-500" />
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">Facilitator login: rohitbst.104764@gmail.com</p>
+          </div>
+          <button type="submit" id="loginBtn"
+            class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-2 text-sm">
+            <span>Enter Portal</span>
+            <i class="fa-solid fa-chevron-right text-xs"></i>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 2. QUIZ GATEWAY SCREEN (Post-Class Review) -->
+    <section id="quizSection" class="hidden max-w-3xl w-full mx-auto space-y-6">
+      <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 text-center">
+        <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-400/20 text-amber-300 uppercase tracking-wider mb-2">Step 1 of 2: Post-Class Review</span>
+        <h2 id="quizHeaderTitle" class="text-lg md:text-xl font-bold text-amber-100">Weekly Comprehension Quiz</h2>
+        <p class="text-xs text-slate-400 mt-1 max-w-lg mx-auto">Please complete the comprehension quiz on today's session before continuing to your weekly sadhana audit worksheet.</p>
+      </div>
+
+      <div id="quizQuestionsContainer" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="text-center pt-2">
+        <button id="submitQuizBtn" onclick="submitQuizAnswers()"
+          class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-8 py-3 rounded-xl shadow-lg transition duration-200 inline-flex items-center gap-2">
+          <span>Submit Quiz</span>
+          <i class="fa-solid fa-paper-plane text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Quiz Results / Review Screen -->
+      <div id="quizReviewCard" class="hidden bg-slate-800/90 border border-slate-700 rounded-2xl p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-slate-700/80 pb-4">
+          <div>
+            <h3 class="text-base font-bold">Quiz Results & Verification</h3>
+            <p id="quizScoreText" class="text-xs text-slate-400"></p>
+          </div>
+          <span id="quizBadgeStatus" class="px-3 py-1 rounded-full text-xs font-bold"></span>
+        </div>
+        <div id="quizReviewList" class="space-y-4"></div>
+        <div class="pt-4 text-center">
+          <button onclick="proceedToWorksheet()"
+            class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-8 py-3 rounded-xl shadow-lg transition duration-200 inline-flex items-center gap-2">
+            <span>Proceed to Sadhana Worksheet</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. WORKSHEET SCREEN (Dynamic 1-to-5 or 8-Gate Tracker) -->
+    <section id="worksheetSection" class="hidden space-y-6">
+      
+      <!-- Week & Devotee Bar -->
+      <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-amber-400">Current Worksheet</span>
+          <h2 id="wsTitle" class="text-lg md:text-xl font-bold text-slate-100">Loading...</h2>
+        </div>
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <label class="text-xs font-medium text-slate-400 whitespace-nowrap">Week Selector:</label>
+          <select id="weekDropdown" onchange="onWeekSelectionChanged(this.value)"
+            class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 focus:border-amber-500 focus:outline-none w-full md:w-48">
+          </select>
+        </div>
+      </div>
+
+      <!-- Section A: Verse Recitation & Memorization -->
+      <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-3">
+        <div class="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide">
+          <span class="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center text-xs">A</span>
+          <h3>VERSE RECITATION & MEMORIZATION</h3>
+        </div>
+        <div class="space-y-2.5 pt-1">
+          <label class="flex items-start gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 cursor-pointer hover:border-slate-600 transition">
+            <input type="checkbox" id="chkVerse1" class="mt-0.5 rounded border-slate-700 text-amber-500 focus:ring-0 w-4 h-4 bg-slate-800" />
+            <span id="labelVerse1" class="text-xs md:text-sm text-slate-300"></span>
+          </label>
+          <label class="flex items-start gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 cursor-pointer hover:border-slate-600 transition">
+            <input type="checkbox" id="chkVerse2" class="mt-0.5 rounded border-slate-700 text-amber-500 focus:ring-0 w-4 h-4 bg-slate-800" />
+            <span id="labelVerse2" class="text-xs md:text-sm text-slate-300"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Section B: Daily Tracker (Friday to Thursday Cycle) -->
+      <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide">
+            <span class="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center text-xs">B</span>
+            <h3 id="sectionBTitle">DAILY TRACKER (FRIDAY TO THURSDAY)</h3>
+          </div>
+          <div id="matrixScoreBadge" class="text-xs font-semibold px-3 py-1 bg-slate-900 rounded-full border border-slate-700 text-slate-300">
+            Average: <span id="matrixScoreVal" class="text-amber-400 font-bold">--</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto pb-2">
+          <table class="w-full text-left text-xs min-w-[620px]">
+            <thead>
+              <tr class="border-b border-slate-700 text-slate-400 font-semibold">
+                <th class="py-2.5 px-3">Metric / Pillar</th>
+                <th class="py-2.5 px-2 text-center">Fri</th>
+                <th class="py-2.5 px-2 text-center">Sat</th>
+                <th class="py-2.5 px-2 text-center">Sun</th>
+                <th class="py-2.5 px-2 text-center">Mon</th>
+                <th class="py-2.5 px-2 text-center">Tue</th>
+                <th class="py-2.5 px-2 text-center">Wed</th>
+                <th class="py-2.5 px-2 text-center">Thu</th>
+              </tr>
+            </thead>
+            <tbody id="trackerTableBody" class="divide-y divide-slate-700/50 text-slate-300">
+              <!-- Dynamically populated based on tracker_type -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section C: Reflection & Resolution -->
+      <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-4">
+        <div class="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide">
+          <span class="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center text-xs">C</span>
+          <h3>REFLECTION & RESOLUTION</h3>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label id="labelQ1" class="block text-xs md:text-sm font-medium text-slate-300 mb-1.5"></label>
+            <textarea id="ansQ1" rows="2" placeholder="Write your observation..."
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs md:text-sm text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+          </div>
+          <div>
+            <label id="labelQ2" class="block text-xs md:text-sm font-medium text-slate-300 mb-1.5"></label>
+            <textarea id="ansQ2" rows="2" placeholder="Write your observation..."
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs md:text-sm text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+          </div>
+
+          <!-- Dynamic Vow Module -->
+          <div class="bg-slate-900/80 border border-slate-700/80 rounded-xl p-4 space-y-3">
+            <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider">Specific Vow Commitment</h4>
+            <div id="vowControlsContainer" class="flex flex-wrap items-center gap-2 text-xs md:text-sm text-slate-300">
+              <!-- Inline dropdowns generated here -->
+            </div>
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs italic text-amber-200" id="vowPreviewBox">
+              <!-- Live vow preview -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+        <button onclick="shareWhatsAppSummary()"
+          class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-xs font-semibold text-slate-300 flex items-center justify-center gap-2">
+          <i class="fa-brands fa-whatsapp text-emerald-400 text-base"></i>
+          <span>Copy WhatsApp Summary</span>
+        </button>
+        <button id="saveWorksheetBtn" onclick="submitWorksheet()"
+          class="w-full sm:w-auto px-8 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs md:text-sm shadow-lg flex items-center justify-center gap-2">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>Save to Sangha Database</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 4. FACILITATOR DASHBOARD -->
+    <section id="facilitatorSection" class="hidden space-y-6">
+      
+      <!-- Facilitator Top Bar & Unlock Controls -->
+      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700 pb-4">
+          <div>
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Facilitator Command Center</span>
+            <h2 class="text-xl font-bold">Radha Govind Darshan Das</h2>
+            <p class="text-xs text-slate-400">Class: Thursday 8:30 PM - 9:00 PM | Cycle: Friday to Thursday</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-300">Active Unlocked Week:</span>
+            <span id="currentUnlockedBadge" class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full font-bold text-sm">Week 1</span>
+          </div>
+        </div>
+
+        <!-- Week Unlocker Buttons -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-2">Unlock Next Class Week (1–52):</label>
+          <div id="unlockWeekButtons" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1 bg-slate-900 rounded-xl border border-slate-800">
+            <!-- Dynamically populated 1 to 52 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard View Switcher -->
+      <div class="flex border-b border-slate-800 gap-4">
+        <button onclick="switchFacilitatorTab('weekView')" id="tabBtnWeek"
+          class="pb-2.5 px-2 text-xs md:text-sm font-bold border-b-2 border-amber-500 text-amber-400">
+          <i class="fa-solid fa-calendar-week mr-1.5"></i> 1st View: Week-wise Cohort
+        </button>
+        <button onclick="switchFacilitatorTab('devoteeView')" id="tabBtnDevotee"
+          class="pb-2.5 px-2 text-xs md:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-user-check mr-1.5"></i> 2nd View: Devotee Trajectory
+        </button>
+      </div>
+
+      <!-- VIEW 1: Week-wise Table -->
+      <div id="facWeekView" class="space-y-4">
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-medium text-slate-400">Choose Week to Inspect:</label>
+          <select id="facWeekFilter" onchange="renderFacilitatorWeekTable()"
+            class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2">
+          </select>
+        </div>
+        <div class="bg-slate-800/80 border border-slate-700 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs min-w-[750px]">
+              <thead class="bg-slate-900/80 text-slate-400 font-semibold border-b border-slate-700">
+                <tr>
+                  <th class="py-3 px-4">Devotee Name</th>
+                  <th class="py-3 px-3">Quiz Status</th>
+                  <th class="py-3 px-3">Verse Check</th>
+                  <th class="py-3 px-3">Fri–Thu Score</th>
+                  <th class="py-3 px-3">Vow Commitment</th>
+                  <th class="py-3 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="facWeekTableBody" class="divide-y divide-slate-700 text-slate-300">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: Devotee-wise Trajectory -->
+      <div id="facDevoteeView" class="hidden space-y-4">
+        <div class="flex items-center gap-3">
+          <label class="text-xs font-medium text-slate-400">Choose Devotee:</label>
+          <select id="facDevoteeFilter" onchange="renderFacilitatorDevoteeTable()"
+            class="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2">
+          </select>
+        </div>
+        <div class="bg-slate-800/80 border border-slate-700 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs min-w-[750px]">
+              <thead class="bg-slate-900/80 text-slate-400 font-semibold border-b border-slate-700">
+                <tr>
+                  <th class="py-3 px-4">Week #</th>
+                  <th class="py-3 px-3">Verse Memorized</th>
+                  <th class="py-3 px-3">Fri–Thu Score / Purity</th>
+                  <th class="py-3 px-3">Vow Statement</th>
+                  <th class="py-3 px-3">Reflections (Q1 & Q2)</th>
+                </tr>
+              </thead>
+              <tbody id="facDevoteeTableBody" class="divide-y divide-slate-700 text-slate-300">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-800 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl shadow-2xl text-xs flex items-center gap-3 transform translate-y-20 opacity-0 transition duration-300 pointer-events-none">
+    <i id="toastIcon" class="fa-solid fa-check-circle text-amber-400 text-base"></i>
+    <span id="toastMsg">Notification message</span>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    // *************************************************************
+    // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE:
+    // *************************************************************
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuhnpVDRoHHgv4z09DDz8SI19poaLIyaYBjZwfhEHCtfkyAbxDxMORn4NvL7gwEstIWg/exec";
+
+    const DAYS = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"];
+
+    let AppState = {
+      user: null,
+      unlockedWeek: 1,
+      curriculum: [],
+      currentSelectedWeek: 1,
+      quizCompleted: false,
+      currentQuizQuestions: [],
+      matrixState: {},
+      vowState: {},
+      facilitatorData: null
+    };
+
+    // Auto-login check on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedUser = localStorage.getItem("sadhana_portal_user");
+      if (savedUser) {
+        AppState.user = JSON.parse(savedUser);
+        fetchInitialData(AppState.user.email);
+      }
+    });
+
+    function showToast(msg, isSuccess = true) {
+      const toast = document.getElementById("toast");
+      const toastMsg = document.getElementById("toastMsg");
+      const toastIcon = document.getElementById("toastIcon");
+      toastMsg.innerText = msg;
+      toastIcon.className = isSuccess ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-triangle-exclamation text-rose-400";
+      toast.classList.remove("translate-y-20", "opacity-0");
+      setTimeout(() => toast.classList.add("translate-y-20", "opacity-0"), 4000);
+    }
+
+    // 1. LOGIN HANDLER
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+      const btn = document.getElementById("loginBtn");
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying...`;
+      btn.disabled = true;
+
+      try {
+        await fetchInitialData(email);
+      } catch (err) {
+        showToast("Error connecting to database: " + err.message, false);
+      } finally {
+        btn.innerHTML = `<span>Enter Portal</span><i class="fa-solid fa-chevron-right text-xs"></i>`;
+        btn.disabled = false;
+      }
+    }
+
+    async function fetchInitialData(email) {
+      const res = await fetch(`${SCRIPT_URL}?action=get_initial_data&email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      if (!data.success) {
+        showToast(data.error || "Email not registered", false);
+        return;
+      }
+
+      AppState.user = data.user;
+      AppState.unlockedWeek = data.current_unlocked_week;
+      AppState.curriculum = data.curriculum;
+      AppState.quizCompleted = data.quiz_completed_for_current_week;
+      AppState.currentSelectedWeek = data.current_unlocked_week;
+
+      localStorage.setItem("sadhana_portal_user", JSON.stringify(AppState.user));
+
+      updateHeader();
+      document.getElementById("loginSection").classList.add("hidden");
+
+      if (AppState.user.isFacilitator) {
+        loadFacilitatorDashboard();
+      } else {
+        // If student has not attempted quiz for active week, route to quiz
+        if (!AppState.quizCompleted) {
+          loadQuizScreen(AppState.unlockedWeek);
+        } else {
+          loadWorksheetScreen(AppState.unlockedWeek, data.existing_worksheet_submission);
+        }
+      }
+    }
+
+    function updateHeader() {
+      document.getElementById("userHeaderBadge").classList.remove("hidden");
+      document.getElementById("navUserName").innerText = AppState.user.name;
+      document.getElementById("navRoleBadge").innerText = AppState.user.isFacilitator ? "Facilitator (Mentor)" : "Devotee";
+    }
+
+    function handleLogout() {
+      localStorage.removeItem("sadhana_portal_user");
+      location.reload();
+    }
+
+    // 2. QUIZ MODULE
+    async function loadQuizScreen(weekNum) {
+      document.getElementById("worksheetSection").classList.add("hidden");
+      document.getElementById("facilitatorSection").classList.add("hidden");
+      document.getElementById("quizSection").classList.remove("hidden");
+      document.getElementById("quizReviewCard").classList.add("hidden");
+      document.getElementById("submitQuizBtn").classList.remove("hidden");
+      document.getElementById("quizHeaderTitle").innerText = `Week ${weekNum} Comprehension Quiz`;
+
+      const container = document.getElementById("quizQuestionsContainer");
+      container.innerHTML = `<div class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><p class="mt-2 text-xs">Loading session questions...</p></div>`;
+
+      const res = await fetch(`${SCRIPT_URL}?action=get_quiz&week_number=${weekNum}`);
+      const data = await res.json();
+      AppState.currentQuizQuestions = data.questions || [];
+
+      if (!AppState.currentQuizQuestions.length) {
+        container.innerHTML = `<div class="p-6 bg-slate-800 rounded-xl text-center text-xs text-slate-400">No quiz questions recorded for this week yet. You can proceed directly to the worksheet.</div>`;
+        document.getElementById("submitQuizBtn").classList.add("hidden");
+        document.getElementById("quizReviewCard").classList.remove("hidden");
+        document.getElementById("quizScoreText").innerText = "Quiz exempted for this session";
+        return;
+      }
+
+      container.innerHTML = AppState.currentQuizQuestions.map((q, idx) => `
+        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 space-y-3">
+          <div class="flex items-start gap-2">
+            <span class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center text-xs font-bold shrink-0">${idx + 1}</span>
+            <p class="text-sm font-semibold text-slate-200">${q.question_text}</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pl-8 pt-1">
+            ${['a', 'b', 'c', 'd'].map(opt => `
+              <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-700/60 bg-slate-900/60 hover:border-slate-500 cursor-pointer text-xs text-slate-300">
+                <input type="${q.question_type === 'multi_choice' ? 'checkbox' : 'radio'}" name="q_${q.question_id}" value="${opt.toUpperCase()}" class="accent-amber-500" />
+                <span><strong class="text-amber-400">${opt.toUpperCase()}:</strong>${q['option_' + opt]}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function submitQuizAnswers() {
+      const answers = {};
+      AppState.currentQuizQuestions.forEach(q => {
+        if (q.question_type === 'multi_choice') {
+          const checked = Array.from(document.querySelectorAll(`input[name="q_${q.question_id}"]:checked`)).map(cb => cb.value);
+          answers[q.question_id] = checked;
+        } else {
+          const selected = document.querySelector(`input[name="q_${q.question_id}"]:checked`);
+          answers[q.question_id] = selected ? selected.value : "";
+        }
+      });
+
+      const btn = document.getElementById("submitQuizBtn");
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          action: "submit_quiz",
+          devotee_email: AppState.user.email,
+          devotee_name: AppState.user.name,
+          week_number: AppState.unlockedWeek,
+          answers: answers
+        };
+
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        // Render Instant Review Screen
+        btn.classList.add("hidden");
+        const reviewCard = document.getElementById("quizReviewCard");
+        reviewCard.classList.remove("hidden");
+
+        document.getElementById("quizScoreText").innerText = `You scored ${result.score} out of ${result.total} (${result.percentage}%)`;
+        const badge = document.getElementById("quizBadgeStatus");
+        badge.innerText = result.passed ? "Passed" : "Needs Review";
+        badge.className = result.passed ? "px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+
+        const reviewList = document.getElementById("quizReviewList");
+        reviewList.innerHTML = result.review.map(r => `
+          <div class="p-3.5 rounded-xl border ${r.is_correct ? 'border-emerald-500/30 bg-emerald-950/20' : 'border-rose-500/30 bg-rose-950/20'} space-y-1.5 text-xs">
+            <p class="font-semibold text-slate-200">${r.question_text}</p>
+            <p class="${r.is_correct ? 'text-emerald-400 font-medium' : 'text-rose-400 font-medium'}">
+              ${r.is_correct ? '✔ Correct Answer: ' : '✖ Your Answer: ' + (Array.isArray(r.your_answer) ? r.your_answer.join(', ') : r.your_answer) + ' | Correct Answer: '}${r.correct_answer}
+            </p>
+            ${r.explanation ? `<p class="text-[11px] text-slate-400 italic">💡 Purport Insight: ${r.explanation}</p>` : ''}
+          </div>
+        `).join('');
+
+        AppState.quizCompleted = true;
+      } catch (err) {
+        showToast("Error recording quiz: " + err.message, false);
+        btn.innerHTML = `<span>Submit Quiz</span><i class="fa-solid fa-paper-plane text-xs"></i>`;
+        btn.disabled = false;
+      }
+    }
+
+    function proceedToWorksheet() {
+      document.getElementById("quizSection").classList.add("hidden");
+      loadWorksheetScreen(AppState.unlockedWeek, null);
+    }
+
+    // 3. WORKSHEET ENGINE (Dynamic Weeks 1 to 52)
+    function loadWorksheetScreen(weekNum, existingSub) {
+      document.getElementById("quizSection").classList.add("hidden");
+      document.getElementById("facilitatorSection").classList.add("hidden");
+      document.getElementById("worksheetSection").classList.remove("hidden");
+
+      // Setup dropdown
+      const dropdown = document.getElementById("weekDropdown");
+      dropdown.innerHTML = "";
+      for (let i = 1; i <= 52; i++) {
+        const isLocked = i > AppState.unlockedWeek;
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.disabled = isLocked;
+        opt.innerText = isLocked ? `🔒 Week ${i} (Locked)` : `Week ${i}`;
+        if (i === weekNum) opt.selected = true;
+        dropdown.appendChild(opt);
+      }
+
+      renderWeekWorksheet(weekNum, existingSub);
+    }
+
+    function onWeekSelectionChanged(selectedVal) {
+      renderWeekWorksheet(parseInt(selectedVal, 10), null);
+    }
+
+    function renderWeekWorksheet(weekNum, existingData) {
+      AppState.currentSelectedWeek = weekNum;
+      const weekConfig = AppState.curriculum.find(c => parseInt(c.week_number, 10) === weekNum) || {
+        week_title: `WEEK ${weekNum}`,
+        verse_check_1: "Recited weekly verse",
+        verse_check_2: "Understood weekly purport",
+        tracker_type: "rating_1_to_5",
+        tracker_rows_json: '["Morning Mind", "Speech Purity", "Sensory Restraint"]',
+        reflection_q1: "Observation 1",
+        reflection_q2: "Observation 2",
+        vow_template: "I will maintain steady sadhana.",
+        vow_fields_config_json: '[]'
+      };
+
+      document.getElementById("wsTitle").innerText = weekConfig.week_title;
+      document.getElementById("labelVerse1").innerText = weekConfig.verse_check_1;
+      document.getElementById("labelVerse2").innerText = weekConfig.verse_check_2;
+      document.getElementById("labelQ1").innerText = weekConfig.reflection_q1;
+      document.getElementById("labelQ2").innerText = weekConfig.reflection_q2;
+
+      // Section B Tracker Rendering
+      let rows = [];
+      try { rows = JSON.parse(weekConfig.tracker_rows_json); } catch(e) { rows = ["Pillar 1", "Pillar 2"]; }
+
+      const trackerType = weekConfig.tracker_type; // 'rating_1_to_5' or 'binary_check_cross'
+      AppState.matrixState = {};
+
+      const tableBody = document.getElementById("trackerTableBody");
+      tableBody.innerHTML = "";
+
+      rows.forEach((rowName, rIdx) => {
+        AppState.matrixState[rowName] = {};
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/40";
+
+        let html = `<td class="py-2.5 px-3 font-medium text-slate-200 text-xs">${rowName}</td>`;
+
+        DAYS.forEach(day => {
+          AppState.matrixState[rowName][day] = trackerType === 'rating_1_to_5' ? 3 : 'pass';
+
+          if (trackerType === 'rating_1_to_5') {
+            html += `
+              <td class="py-2 px-1 text-center">
+                <select onchange="updateMatrixScore('${rowName}', '${day}', this.value)" class="bg-slate-900 border border-slate-700 text-amber-400 rounded-lg p-1 text-xs focus:outline-none">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </td>`;
+          } else {
+            // Binary Check / Cross toggle (Week 2 format)
+            html += `
+              <td class="py-2 px-1 text-center">
+                <button type="button" id="btn_${rIdx}_${day}" onclick="toggleBinaryGate('${rowName}', '${day}', this)"
+                  class="matrix-btn w-7 h-7 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                  ✔
+                </button>
+              </td>`;
+          }
+        });
+
+        tr.innerHTML = html;
+        tableBody.appendChild(tr);
+      });
+
+      calculateMatrixAverage(trackerType);
+
+      // Section C Dynamic Vow Rendering
+      renderDynamicVow(weekConfig.vow_template, weekConfig.vow_fields_config_json);
+    }
+
+    function updateMatrixScore(row, day, val) {
+      AppState.matrixState[row][day] = parseInt(val, 10);
+      calculateMatrixAverage('rating_1_to_5');
+    }
+
+    function toggleBinaryGate(row, day, btn) {
+      const isCurrentlyPass = AppState.matrixState[row][day] === 'pass';
+      if (isCurrentlyPass) {
+        AppState.matrixState[row][day] = 'fail';
+        btn.innerText = '✖';
+        btn.className = 'matrix-btn w-7 h-7 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40';
+      } else {
+        AppState.matrixState[row][day] = 'pass';
+        btn.innerText = '✔';
+        btn.className = 'matrix-btn w-7 h-7 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+      }
+      calculateMatrixAverage('binary_check_cross');
+    }
+
+    function calculateMatrixAverage(trackerType) {
+      const badge = document.getElementById("matrixScoreVal");
+      let total = 0, count = 0;
+
+      for (let r in AppState.matrixState) {
+        for (let d in AppState.matrixState[r]) {
+          const val = AppState.matrixState[r][d];
+          if (trackerType === 'rating_1_to_5') {
+            total += parseInt(val, 10);
+            count++;
+          } else {
+            if (val === 'pass') total++;
+            count++;
+          }
+        }
+      }
+
+      if (trackerType === 'rating_1_to_5') {
+        const avg = count ? (total / count).toFixed(1) : "0.0";
+        badge.innerText = `${avg} / 5.0`;
+      } else {
+        const percent = count ? Math.round((total / count) * 100) : 100;
+        badge.innerText = `${percent}% Guarded (${total}/${count})`;
+      }
+    }
+
+    function renderDynamicVow(templateStr, fieldsJson) {
+      let fields = [];
+      try { fields = JSON.parse(fieldsJson); } catch(e) { fields = []; }
+
+      const container = document.getElementById("vowControlsContainer");
+      container.innerHTML = "";
+      AppState.vowState = {};
+
+      if (!fields || !fields.length) {
+        container.innerHTML = `<span class="italic text-slate-400">${templateStr}</span>`;
+        updateVowPreview(templateStr);
+        return;
+      }
+
+      fields.forEach(field => {
+        AppState.vowState[field.id] = field.default || (field.options ? field.options[0] : "");
+        const wrap = document.createElement("div");
+        wrap.className = "flex items-center gap-1.5";
+        wrap.innerHTML = `
+          <label class="text-[11px] font-medium text-slate-400">${field.label || field.id}:</label>
+          <select onchange="updateVowField('${field.id}', this.value, '${encodeURIComponent(templateStr)}')"
+            class="bg-slate-950 border border-slate-700 text-amber-400 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+            ${field.options.map(opt => `<option value="${opt}" ${opt == field.default ? 'selected' : ''}>${opt}</option>`).join('')}
+          </select>
+        `;
+        container.appendChild(wrap);
+      });
+
+      updateVowPreview(templateStr);
+    }
+
+    function updateVowField(id, val, encodedTemplate) {
+      AppState.vowState[id] = val;
+      updateVowPreview(decodeURIComponent(encodedTemplate));
+    }
+
+    function updateVowPreview(template) {
+      let resolved = template;
+      for (let k in AppState.vowState) {
+        resolved = resolved.replace(new RegExp(`{{${k}}}`, 'g'), AppState.vowState[k]);
+      }
+      document.getElementById("vowPreviewBox").innerText = `"${resolved}"`;
+    }
+
+    async function submitWorksheet() {
+      const btn = document.getElementById("saveWorksheetBtn");
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          action: "submit_worksheet",
+          devotee_email: AppState.user.email,
+          devotee_name: AppState.user.name,
+          week_number: AppState.currentSelectedWeek,
+          verse_check_1_passed: document.getElementById("chkVerse1").checked,
+          verse_check_2_passed: document.getElementById("chkVerse2").checked,
+          tracker_type: AppState.curriculum.find(c => parseInt(c.week_number, 10) === AppState.currentSelectedWeek)?.tracker_type || "rating_1_to_5",
+          audit_matrix: AppState.matrixState,
+          weekly_average_or_percent: document.getElementById("matrixScoreVal").innerText,
+          reflection_q1: document.getElementById("ansQ1").value.trim(),
+          reflection_q2: document.getElementById("ansQ2").value.trim(),
+          vow_statement: document.getElementById("vowPreviewBox").innerText.replace(/"/g, '')
+        };
+
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        showToast("Hare Krishna! Sādhana audit submitted successfully.");
+      } catch (err) {
+        showToast("Error saving worksheet: " + err.message, false);
+      } finally {
+        btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i><span>Save to Sangha Database</span>`;
+        btn.disabled = false;
+      }
+    }
+
+    function shareWhatsAppSummary() {
+      const week = AppState.currentSelectedWeek;
+      const score = document.getElementById("matrixScoreVal").innerText;
+      const vow = document.getElementById("vowPreviewBox").innerText;
+      const text = `*WEEK ${week} SADHANA REPORT*\nDevotee: ${AppState.user.name}\nFri–Thu Audit Score: ${score}\nVow: ${vow}\n_Submitted via Sangha Portal_`;
+      navigator.clipboard.writeText(text);
+      showToast("Report copied to clipboard! Paste it into WhatsApp.");
+    }
+
+    // 4. FACILITATOR DASHBOARD LOGIC
+    async function loadFacilitatorDashboard() {
+      document.getElementById("loginSection").classList.add("hidden");
+      document.getElementById("quizSection").classList.add("hidden");
+      document.getElementById("worksheetSection").classList.add("hidden");
+      document.getElementById("facilitatorSection").classList.remove("hidden");
+
+      document.getElementById("currentUnlockedBadge").innerText = `Week ${AppState.unlockedWeek}`;
+
+      // Build 52 unlock buttons
+      const btnContainer = document.getElementById("unlockWeekButtons");
+      btnContainer.innerHTML = "";
+      for (let i = 1; i <= 52; i++) {
+        const isCurrent = i === AppState.unlockedWeek;
+        const b = document.createElement("button");
+        b.className = `px-2.5 py-1 text-[11px] font-bold rounded-lg transition ${isCurrent ? 'bg-amber-500 text-slate-950 font-extrabold shadow' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`;
+        b.innerText = `W${i}`;
+        b.onclick = () => unlockWeek(i);
+        btnContainer.appendChild(b);
+      }
+
+      // Fetch Full Facilitator Data
+      const res = await fetch(`${SCRIPT_URL}?action=get_facilitator_data&email=${encodeURIComponent(AppState.user.email)}`);
+      AppState.facilitatorData = await res.json();
+
+      // Setup View 1 Week Dropdown
+      const weekFilter = document.getElementById("facWeekFilter");
+      weekFilter.innerHTML = "";
+      for (let i = 1; i <= AppState.unlockedWeek; i++) {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.innerText = `Week ${i}`;
+        weekFilter.appendChild(opt);
+      }
+      weekFilter.value = AppState.unlockedWeek;
+
+      // Setup View 2 Devotee Dropdown
+      const devFilter = document.getElementById("facDevoteeFilter");
+      devFilter.innerHTML = "";
+      (AppState.facilitatorData.students || []).forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.email;
+        opt.innerText = `${s.devotee_name} (${s.email})`;
+        devFilter.appendChild(opt);
+      });
+
+      renderFacilitatorWeekTable();
+    }
+
+    async function unlockWeek(targetWeek) {
+      if (!confirm(`Unlock Week ${targetWeek} for all students?`)) return;
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "unlock_week",
+            facilitator_email: AppState.user.email,
+            new_week: targetWeek
+          })
+        });
+        const data = await res.json();
+        AppState.unlockedWeek = data.new_unlocked_week;
+        showToast(`Week ${targetWeek} is now active.`);
+        loadFacilitatorDashboard();
+      } catch(e) {
+        showToast("Error updating week: " + e.message, false);
+      }
+    }
+
+    function switchFacilitatorTab(tabName) {
+      if (tabName === 'weekView') {
+        document.getElementById("facWeekView").classList.remove("hidden");
+        document.getElementById("facDevoteeView").classList.add("hidden");
+        document.getElementById("tabBtnWeek").className = "pb-2.5 px-2 text-xs md:text-sm font-bold border-b-2 border-amber-500 text-amber-400";
+        document.getElementById("tabBtnDevotee").className = "pb-2.5 px-2 text-xs md:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+        renderFacilitatorWeekTable();
+      } else {
+        document.getElementById("facWeekView").classList.add("hidden");
+        document.getElementById("facDevoteeView").classList.remove("hidden");
+        document.getElementById("tabBtnWeek").className = "pb-2.5 px-2 text-xs md:text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+        document.getElementById("tabBtnDevotee").className = "pb-2.5 px-2 text-xs md:text-sm font-bold border-b-2 border-amber-500 text-amber-400";
+        renderFacilitatorDevoteeTable();
+      }
+    }
+
+    function renderFacilitatorWeekTable() {
+      const selectedWeek = parseInt(document.getElementById("facWeekFilter").value || "1", 10);
+      const students = AppState.facilitatorData.students || [];
+      const wsSubs = AppState.facilitatorData.worksheet_submissions || [];
+      const quizSubs = AppState.facilitatorData.quiz_submissions || [];
+
+      const tbody = document.getElementById("facWeekTableBody");
+      tbody.innerHTML = "";
+
+      students.forEach(s => {
+        const sub = wsSubs.find(w => (w.devotee_email || "").toLowerCase() === (s.email || "").toLowerCase() && parseInt(w.week_number, 10) === selectedWeek);
+        const qSub = quizSubs.find(q => (q.devotee_email || "").toLowerCase() === (s.email || "").toLowerCase() && parseInt(q.week_number, 10) === selectedWeek);
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-semibold text-slate-200">${s.devotee_name}<br><span class="text-[11px] text-slate-500 font-normal">${s.email}</span></td>
+          <td class="py-3 px-3">${qSub ? `<span class="text-emerald-400 font-semibold">${qSub.score}/${qSub.total_questions} (${String(qSub.passed).toLowerCase() === 'true' ? 'Passed' : 'Review'})</span>` : `<span class="text-slate-500">Pending</span>`}</td>
+          <td class="py-3 px-3">${sub ? (String(sub.verse_check_1_passed).toLowerCase() === 'true' ? '✔ Memorized' : '❌ Pending') : '—'}</td>
+          <td class="py-3 px-3 font-bold ${sub ? 'text-amber-400' : 'text-slate-500'}">${sub ? sub.weekly_average_or_percent : 'Not Submitted'}</td>
+          <td class="py-3 px-3 text-xs italic text-slate-400 max-w-xs truncate">${sub ? sub.vow_statement : '—'}</td>
+          <td class="py-3 px-3 text-right">
+            ${sub ? `<button onclick="alert('Reflections:\\n\\nQ1: ' + ${JSON.stringify(sub.reflection_q1)} + '\\n\\nQ2: ' +${JSON.stringify(sub.reflection_q2)})" class="text-xs text-amber-400 hover:underline">View Reflections</button>` : `<span class="text-xs text-slate-600">—</span>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderFacilitatorDevoteeTable() {
+      const email = (document.getElementById("facDevoteeFilter").value || "").toLowerCase();
+      const wsSubs = AppState.facilitatorData.worksheet_submissions || [];
+      const devoteeSubs = wsSubs.filter(w => (w.devotee_email || "").toLowerCase() === email);
+
+      const tbody = document.getElementById("facDevoteeTableBody");
+      tbody.innerHTML = "";
+
+      if (!devoteeSubs.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-500 text-xs">No worksheets submitted yet by this devotee.</td></tr>`;
+        return;
+      }
+
+      devoteeSubs.sort((a, b) => parseInt(a.week_number, 10) - parseInt(b.week_number, 10));
+
+      devoteeSubs.forEach(sub => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-amber-400">Week ${sub.week_number}</td>
+          <td class="py-3 px-3">${String(sub.verse_check_1_passed).toLowerCase() === 'true' ? '✔ Memorized' : '❌ Not Yet'}</td>
+          <td class="py-3 px-3 font-semibold text-slate-200">${sub.weekly_average_or_percent}</td>
+          <td class="py-3 px-3 text-xs italic text-slate-300">${sub.vow_statement}</td>
+          <td class="py-3 px-3 text-xs text-slate-400">
+            <strong>Q1:</strong> ${sub.reflection_q1 || '—'}<br>
+            <strong>Q2:</strong> ${sub.reflection_q2 || '—'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
