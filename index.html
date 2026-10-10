@@ -19,9 +19,10 @@
   <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40 px-4 py-3">
     <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center font-bold text-slate-950 shadow-md">
-          <i class="fa-solid fa-om text-lg"></i>
-        </div>
+        <!-- Local Logo from repository: logo.png -->
+        <img id="portalLogo" src="./logo.png" 
+             alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 shadow-md border border-slate-700 p-0.5" 
+             onerror="this.onerror=null; this.src='https://placehold.co/80x80/1e293b/f59e0b?text=SADHANA';" />
         <div>
           <h1 class="font-bold text-base md:text-lg leading-tight tracking-tight">Sādhana Audit Portal</h1>
           <p class="text-xs text-amber-400/90 font-medium hidden sm:block">Thursday 8:30 PM Sangha | Friday–Thursday Cycle</p>
@@ -78,12 +79,10 @@
       <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 text-center">
         <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-400/20 text-amber-300 uppercase tracking-wider mb-2">Step 1 of 2: Post-Class Review</span>
         <h2 id="quizHeaderTitle" class="text-lg md:text-xl font-bold text-amber-100">Weekly Comprehension Quiz</h2>
-        <p class="text-xs text-slate-400 mt-1 max-w-lg mx-auto">Please complete the comprehension quiz on today's session before continuing to your weekly sadhana audit worksheet.</p>
+        <p class="text-xs text-slate-400 mt-1 max-w-lg mx-auto">Please complete the quiz on today's session before accessing your weekly sadhana audit worksheet.</p>
       </div>
 
-      <div id="quizQuestionsContainer" class="space-y-4">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="quizQuestionsContainer" class="space-y-4"></div>
 
       <div class="text-center pt-2">
         <button id="submitQuizBtn" onclick="submitQuizAnswers()"
@@ -113,7 +112,7 @@
       </div>
     </section>
 
-    <!-- 3. WORKSHEET SCREEN (Dynamic 1-to-5 or 8-Gate Tracker) -->
+    <!-- 3. WORKSHEET SCREEN -->
     <section id="worksheetSection" class="hidden space-y-6">
       
       <!-- Week & Devotee Bar -->
@@ -156,7 +155,7 @@
             <h3 id="sectionBTitle">DAILY TRACKER (FRIDAY TO THURSDAY)</h3>
           </div>
           <div id="matrixScoreBadge" class="text-xs font-semibold px-3 py-1 bg-slate-900 rounded-full border border-slate-700 text-slate-300">
-            Average: <span id="matrixScoreVal" class="text-amber-400 font-bold">--</span>
+            Average: <span id="matrixScoreVal" class="text-amber-400 font-bold">0.0 / 5.0</span>
           </div>
         </div>
 
@@ -175,7 +174,6 @@
               </tr>
             </thead>
             <tbody id="trackerTableBody" class="divide-y divide-slate-700/50 text-slate-300">
-              <!-- Dynamically populated based on tracker_type -->
             </tbody>
           </table>
         </div>
@@ -204,10 +202,8 @@
           <div class="bg-slate-900/80 border border-slate-700/80 rounded-xl p-4 space-y-3">
             <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider">Specific Vow Commitment</h4>
             <div id="vowControlsContainer" class="flex flex-wrap items-center gap-2 text-xs md:text-sm text-slate-300">
-              <!-- Inline dropdowns generated here -->
             </div>
             <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs italic text-amber-200" id="vowPreviewBox">
-              <!-- Live vow preview -->
             </div>
           </div>
         </div>
@@ -231,7 +227,6 @@
     <!-- 4. FACILITATOR DASHBOARD -->
     <section id="facilitatorSection" class="hidden space-y-6">
       
-      <!-- Facilitator Top Bar & Unlock Controls -->
       <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700 pb-4">
           <div>
@@ -245,16 +240,13 @@
           </div>
         </div>
 
-        <!-- Week Unlocker Buttons -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-2">Unlock Next Class Week (1–52):</label>
           <div id="unlockWeekButtons" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1 bg-slate-900 rounded-xl border border-slate-800">
-            <!-- Dynamically populated 1 to 52 -->
           </div>
         </div>
       </div>
 
-      <!-- Dashboard View Switcher -->
       <div class="flex border-b border-slate-800 gap-4">
         <button onclick="switchFacilitatorTab('weekView')" id="tabBtnWeek"
           class="pb-2.5 px-2 text-xs md:text-sm font-bold border-b-2 border-amber-500 text-amber-400">
@@ -266,7 +258,6 @@
         </button>
       </div>
 
-      <!-- VIEW 1: Week-wise Table -->
       <div id="facWeekView" class="space-y-4">
         <div class="flex items-center gap-3">
           <label class="text-xs font-medium text-slate-400">Choose Week to Inspect:</label>
@@ -288,14 +279,12 @@
                 </tr>
               </thead>
               <tbody id="facWeekTableBody" class="divide-y divide-slate-700 text-slate-300">
-                <!-- Injected via JS -->
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- VIEW 2: Devotee-wise Trajectory -->
       <div id="facDevoteeView" class="hidden space-y-4">
         <div class="flex items-center gap-3">
           <label class="text-xs font-medium text-slate-400">Choose Devotee:</label>
@@ -316,7 +305,6 @@
                 </tr>
               </thead>
               <tbody id="facDevoteeTableBody" class="divide-y divide-slate-700 text-slate-300">
-                <!-- Injected via JS -->
               </tbody>
             </table>
           </div>
@@ -326,7 +314,6 @@
 
   </main>
 
-  <!-- ================= TOAST NOTIFICATION ================= -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-800 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl shadow-2xl text-xs flex items-center gap-3 transform translate-y-20 opacity-0 transition duration-300 pointer-events-none">
     <i id="toastIcon" class="fa-solid fa-check-circle text-amber-400 text-base"></i>
     <span id="toastMsg">Notification message</span>
@@ -337,7 +324,7 @@
     // *************************************************************
     // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE:
     // *************************************************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuhnpVDRoHHgv4z09DDz8SI19poaLIyaYBjZwfhEHCtfkyAbxDxMORn4NvL7gwEstIWg/exec";
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 
     const DAYS = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"];
 
@@ -349,11 +336,11 @@
       quizCompleted: false,
       currentQuizQuestions: [],
       matrixState: {},
+      currentVowTemplate: "",
       vowState: {},
       facilitatorData: null
     };
 
-    // Auto-login check on page load
     window.addEventListener("DOMContentLoaded", () => {
       const savedUser = localStorage.getItem("sadhana_portal_user");
       if (savedUser) {
@@ -372,7 +359,6 @@
       setTimeout(() => toast.classList.add("translate-y-20", "opacity-0"), 4000);
     }
 
-    // 1. LOGIN HANDLER
     async function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value.trim().toLowerCase();
@@ -402,7 +388,7 @@
       AppState.user = data.user;
       AppState.unlockedWeek = data.current_unlocked_week;
       AppState.curriculum = data.curriculum;
-      AppState.quizCompleted = data.quiz_completed_for_current_week;
+      AppState.quizCompleted = data.quiz_completed_for_current_week === true;
       AppState.currentSelectedWeek = data.current_unlocked_week;
 
       localStorage.setItem("sadhana_portal_user", JSON.stringify(AppState.user));
@@ -413,11 +399,11 @@
       if (AppState.user.isFacilitator) {
         loadFacilitatorDashboard();
       } else {
-        // If student has not attempted quiz for active week, route to quiz
-        if (!AppState.quizCompleted) {
-          loadQuizScreen(AppState.unlockedWeek);
-        } else {
+        // Direct route: If student has already done quiz, go straight to worksheet
+        if (AppState.quizCompleted) {
           loadWorksheetScreen(AppState.unlockedWeek, data.existing_worksheet_submission);
+        } else {
+          loadQuizScreen(AppState.unlockedWeek);
         }
       }
     }
@@ -433,7 +419,6 @@
       location.reload();
     }
 
-    // 2. QUIZ MODULE
     async function loadQuizScreen(weekNum) {
       document.getElementById("worksheetSection").classList.add("hidden");
       document.getElementById("facilitatorSection").classList.add("hidden");
@@ -506,7 +491,6 @@
         });
         const result = await res.json();
 
-        // Render Instant Review Screen
         btn.classList.add("hidden");
         const reviewCard = document.getElementById("quizReviewCard");
         reviewCard.classList.remove("hidden");
@@ -540,13 +524,11 @@
       loadWorksheetScreen(AppState.unlockedWeek, null);
     }
 
-    // 3. WORKSHEET ENGINE (Dynamic Weeks 1 to 52)
     function loadWorksheetScreen(weekNum, existingSub) {
       document.getElementById("quizSection").classList.add("hidden");
       document.getElementById("facilitatorSection").classList.add("hidden");
       document.getElementById("worksheetSection").classList.remove("hidden");
 
-      // Setup dropdown
       const dropdown = document.getElementById("weekDropdown");
       dropdown.innerHTML = "";
       for (let i = 1; i <= 52; i++) {
@@ -586,11 +568,10 @@
       document.getElementById("labelQ1").innerText = weekConfig.reflection_q1;
       document.getElementById("labelQ2").innerText = weekConfig.reflection_q2;
 
-      // Section B Tracker Rendering
       let rows = [];
       try { rows = JSON.parse(weekConfig.tracker_rows_json); } catch(e) { rows = ["Pillar 1", "Pillar 2"]; }
 
-      const trackerType = weekConfig.tracker_type; // 'rating_1_to_5' or 'binary_check_cross'
+      const trackerType = weekConfig.tracker_type;
       AppState.matrixState = {};
 
       const tableBody = document.getElementById("trackerTableBody");
@@ -604,26 +585,26 @@
         let html = `<td class="py-2.5 px-3 font-medium text-slate-200 text-xs">${rowName}</td>`;
 
         DAYS.forEach(day => {
-          AppState.matrixState[rowName][day] = trackerType === 'rating_1_to_5' ? 3 : 'pass';
-
           if (trackerType === 'rating_1_to_5') {
+            AppState.matrixState[rowName][day] = 0;
             html += `
               <td class="py-2 px-1 text-center">
                 <select onchange="updateMatrixScore('${rowName}', '${day}', this.value)" class="bg-slate-900 border border-slate-700 text-amber-400 rounded-lg p-1 text-xs focus:outline-none">
+                  <option value="0" selected>0</option>
                   <option value="1">1</option>
                   <option value="2">2</option>
-                  <option value="3" selected>3</option>
+                  <option value="3">3</option>
                   <option value="4">4</option>
                   <option value="5">5</option>
                 </select>
               </td>`;
           } else {
-            // Binary Check / Cross toggle (Week 2 format)
+            AppState.matrixState[rowName][day] = 'fail';
             html += `
               <td class="py-2 px-1 text-center">
                 <button type="button" id="btn_${rIdx}_${day}" onclick="toggleBinaryGate('${rowName}', '${day}', this)"
-                  class="matrix-btn w-7 h-7 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                  ✔
+                  class="matrix-btn w-7 h-7 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                  ✖
                 </button>
               </td>`;
           }
@@ -635,8 +616,8 @@
 
       calculateMatrixAverage(trackerType);
 
-      // Section C Dynamic Vow Rendering
-      renderDynamicVow(weekConfig.vow_template, weekConfig.vow_fields_config_json);
+      AppState.currentVowTemplate = weekConfig.vow_template || "";
+      renderDynamicVow(AppState.currentVowTemplate, weekConfig.vow_fields_config_json);
     }
 
     function updateMatrixScore(row, day, val) {
@@ -679,22 +660,22 @@
         const avg = count ? (total / count).toFixed(1) : "0.0";
         badge.innerText = `${avg} / 5.0`;
       } else {
-        const percent = count ? Math.round((total / count) * 100) : 100;
+        const percent = count ? Math.round((total / count) * 100) : 0;
         badge.innerText = `${percent}% Guarded (${total}/${count})`;
       }
     }
 
     function renderDynamicVow(templateStr, fieldsJson) {
       let fields = [];
-      try { fields = JSON.parse(fieldsJson); } catch(e) { fields = []; }
+      try { fields = typeof fieldsJson === "string" ? JSON.parse(fieldsJson) : fieldsJson; } catch(e) { fields = []; }
 
       const container = document.getElementById("vowControlsContainer");
       container.innerHTML = "";
       AppState.vowState = {};
 
       if (!fields || !fields.length) {
-        container.innerHTML = `<span class="italic text-slate-400">${templateStr}</span>`;
-        updateVowPreview(templateStr);
+        container.innerHTML = `<span class="italic text-slate-400">Fixed Vow</span>`;
+        updateVowPreview();
         return;
       }
 
@@ -704,26 +685,26 @@
         wrap.className = "flex items-center gap-1.5";
         wrap.innerHTML = `
           <label class="text-[11px] font-medium text-slate-400">${field.label || field.id}:</label>
-          <select onchange="updateVowField('${field.id}', this.value, '${encodeURIComponent(templateStr)}')"
+          <select id="vow_select_${field.id}" onchange="handleVowFieldChange('${field.id}', this.value)"
             class="bg-slate-950 border border-slate-700 text-amber-400 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
-            ${field.options.map(opt => `<option value="${opt}" ${opt == field.default ? 'selected' : ''}>${opt}</option>`).join('')}
+            ${field.options.map(opt => `<option value="${opt}" ${opt == AppState.vowState[field.id] ? 'selected' : ''}>${opt}</option>`).join('')}
           </select>
         `;
         container.appendChild(wrap);
       });
 
-      updateVowPreview(templateStr);
+      updateVowPreview();
     }
 
-    function updateVowField(id, val, encodedTemplate) {
-      AppState.vowState[id] = val;
-      updateVowPreview(decodeURIComponent(encodedTemplate));
+    function handleVowFieldChange(fieldId, value) {
+      AppState.vowState[fieldId] = value;
+      updateVowPreview();
     }
 
-    function updateVowPreview(template) {
-      let resolved = template;
+    function updateVowPreview() {
+      let resolved = AppState.currentVowTemplate || "";
       for (let k in AppState.vowState) {
-        resolved = resolved.replace(new RegExp(`{{${k}}}`, 'g'), AppState.vowState[k]);
+        resolved = resolved.split(`{{${k}}}`).join(AppState.vowState[k]);
       }
       document.getElementById("vowPreviewBox").innerText = `"${resolved}"`;
     }
@@ -746,7 +727,7 @@
           weekly_average_or_percent: document.getElementById("matrixScoreVal").innerText,
           reflection_q1: document.getElementById("ansQ1").value.trim(),
           reflection_q2: document.getElementById("ansQ2").value.trim(),
-          vow_statement: document.getElementById("vowPreviewBox").innerText.replace(/"/g, '')
+          vow_statement: document.getElementById("vowPreviewBox").innerText.replace(/^"|"$/g, '')
         };
 
         const res = await fetch(SCRIPT_URL, {
@@ -772,7 +753,6 @@
       showToast("Report copied to clipboard! Paste it into WhatsApp.");
     }
 
-    // 4. FACILITATOR DASHBOARD LOGIC
     async function loadFacilitatorDashboard() {
       document.getElementById("loginSection").classList.add("hidden");
       document.getElementById("quizSection").classList.add("hidden");
@@ -781,7 +761,6 @@
 
       document.getElementById("currentUnlockedBadge").innerText = `Week ${AppState.unlockedWeek}`;
 
-      // Build 52 unlock buttons
       const btnContainer = document.getElementById("unlockWeekButtons");
       btnContainer.innerHTML = "";
       for (let i = 1; i <= 52; i++) {
@@ -793,11 +772,9 @@
         btnContainer.appendChild(b);
       }
 
-      // Fetch Full Facilitator Data
       const res = await fetch(`${SCRIPT_URL}?action=get_facilitator_data&email=${encodeURIComponent(AppState.user.email)}`);
       AppState.facilitatorData = await res.json();
 
-      // Setup View 1 Week Dropdown
       const weekFilter = document.getElementById("facWeekFilter");
       weekFilter.innerHTML = "";
       for (let i = 1; i <= AppState.unlockedWeek; i++) {
@@ -808,7 +785,6 @@
       }
       weekFilter.value = AppState.unlockedWeek;
 
-      // Setup View 2 Devotee Dropdown
       const devFilter = document.getElementById("facDevoteeFilter");
       devFilter.innerHTML = "";
       (AppState.facilitatorData.students || []).forEach(s => {
