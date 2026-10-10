@@ -19,7 +19,7 @@
   <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40 px-4 py-3">
     <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <!-- Local Logo from repository: logo.png -->
+        <!-- Local Logo from repository root: logo.png -->
         <img id="portalLogo" src="./logo.png" 
              alt="Logo" class="w-10 h-10 rounded-xl object-contain bg-slate-800 shadow-md border border-slate-700 p-0.5" 
              onerror="this.onerror=null; this.src='https://placehold.co/80x80/1e293b/f59e0b?text=SADHANA';" />
@@ -115,7 +115,7 @@
     <!-- 3. WORKSHEET SCREEN -->
     <section id="worksheetSection" class="hidden space-y-6">
       
-      <!-- Week & Devotee Bar -->
+      <!-- Week Header & Dropdown -->
       <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <span class="text-[11px] font-semibold uppercase tracking-wider text-amber-400">Current Worksheet</span>
@@ -129,13 +129,32 @@
         </div>
       </div>
 
-      <!-- Section A: Verse Recitation & Memorization -->
-      <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-3">
+      <!-- SECTION A: VERSE RECITATION & MEMORIZATION (Updated with Sanskrit Verse & Meaning) -->
+      <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-4">
         <div class="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide">
           <span class="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center text-xs">A</span>
           <h3>VERSE RECITATION & MEMORIZATION</h3>
         </div>
-        <div class="space-y-2.5 pt-1">
+
+        <!-- Sanskrit Verse & Meaning Cards -->
+        <div class="space-y-3">
+          <div class="bg-gradient-to-r from-amber-950/40 to-slate-900 border border-amber-500/30 rounded-xl p-4 shadow-inner">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-scroll text-amber-400"></i> Weekly Sanskrit Śloka
+            </span>
+            <p id="sanskritVerseBox" class="text-xs md:text-sm font-serif italic text-amber-100 whitespace-pre-line leading-relaxed tracking-wide"></p>
+          </div>
+
+          <div class="bg-slate-900/70 border border-slate-700/60 rounded-xl p-3.5">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-book-open text-slate-400"></i> Purport & Meaning
+            </span>
+            <p id="verseMeaningBox" class="text-xs text-slate-300 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- Memorization Checkboxes -->
+        <div class="space-y-2 pt-1">
           <label class="flex items-start gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 cursor-pointer hover:border-slate-600 transition">
             <input type="checkbox" id="chkVerse1" class="mt-0.5 rounded border-slate-700 text-amber-500 focus:ring-0 w-4 h-4 bg-slate-800" />
             <span id="labelVerse1" class="text-xs md:text-sm text-slate-300"></span>
@@ -147,7 +166,7 @@
         </div>
       </div>
 
-      <!-- Section B: Daily Tracker (Friday to Thursday Cycle) -->
+      <!-- SECTION B: DAILY TRACKER (Friday to Thursday Cycle) -->
       <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div class="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide">
@@ -179,7 +198,7 @@
         </div>
       </div>
 
-      <!-- Section C: Reflection & Resolution -->
+      <!-- SECTION C: REFLECTION & RESOLUTION -->
       <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-4">
         <div class="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide">
           <span class="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center text-xs">C</span>
@@ -314,6 +333,7 @@
 
   </main>
 
+  <!-- ================= TOAST NOTIFICATION ================= -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-800 border border-slate-700 text-slate-100 px-4 py-3 rounded-xl shadow-2xl text-xs flex items-center gap-3 transform translate-y-20 opacity-0 transition duration-300 pointer-events-none">
     <i id="toastIcon" class="fa-solid fa-check-circle text-amber-400 text-base"></i>
     <span id="toastMsg">Notification message</span>
@@ -324,7 +344,7 @@
     // *************************************************************
     // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL HERE:
     // *************************************************************
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyuhnpVDRoHHgv4z09DDz8SI19poaLIyaYBjZwfhEHCtfkyAbxDxMORn4NvL7gwEstIWg/exec";
+    const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
 
     const DAYS = ["Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"];
 
@@ -399,7 +419,6 @@
       if (AppState.user.isFacilitator) {
         loadFacilitatorDashboard();
       } else {
-        // Direct route: If student has already done quiz, go straight to worksheet
         if (AppState.quizCompleted) {
           loadWorksheetScreen(AppState.unlockedWeek, data.existing_worksheet_submission);
         } else {
@@ -554,6 +573,8 @@
         week_title: `WEEK ${weekNum}`,
         verse_check_1: "Recited weekly verse",
         verse_check_2: "Understood weekly purport",
+        sanskrit_verse: "",
+        verse_meaning: "",
         tracker_type: "rating_1_to_5",
         tracker_rows_json: '["Morning Mind", "Speech Purity", "Sensory Restraint"]',
         reflection_q1: "Observation 1",
@@ -565,6 +586,11 @@
       document.getElementById("wsTitle").innerText = weekConfig.week_title;
       document.getElementById("labelVerse1").innerText = weekConfig.verse_check_1;
       document.getElementById("labelVerse2").innerText = weekConfig.verse_check_2;
+      
+      // Dynamic Sanskrit Verse & Meaning Rendering
+      document.getElementById("sanskritVerseBox").innerText = weekConfig.sanskrit_verse || "Śloka details to be studied in this session.";
+      document.getElementById("verseMeaningBox").innerText = weekConfig.verse_meaning || "Purport summary and key philosophical takeaways.";
+
       document.getElementById("labelQ1").innerText = weekConfig.reflection_q1;
       document.getElementById("labelQ2").innerText = weekConfig.reflection_q2;
 
