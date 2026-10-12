@@ -129,7 +129,7 @@
         </div>
       </div>
 
-      <!-- SECTION A: VERSE RECITATION & MEMORIZATION (Updated with Sanskrit Verse & Meaning) -->
+      <!-- SECTION A: VERSE RECITATION & MEMORIZATION -->
       <div class="bg-slate-800/70 border border-slate-700/70 rounded-2xl p-5 md:p-6 space-y-4">
         <div class="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide">
           <span class="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center text-xs">A</span>
@@ -174,7 +174,7 @@
             <h3 id="sectionBTitle">DAILY TRACKER (FRIDAY TO THURSDAY)</h3>
           </div>
           <div id="matrixScoreBadge" class="text-xs font-semibold px-3 py-1 bg-slate-900 rounded-full border border-slate-700 text-slate-300">
-            Average: <span id="matrixScoreVal" class="text-amber-400 font-bold">0.0 / 5.0</span>
+            Score: <span id="matrixScoreVal" class="text-amber-400 font-bold">0.0 / 5.0</span>
           </div>
         </div>
 
@@ -419,6 +419,7 @@
       if (AppState.user.isFacilitator) {
         loadFacilitatorDashboard();
       } else {
+        // If student has already done quiz, go straight to worksheet with prefill
         if (AppState.quizCompleted) {
           loadWorksheetScreen(AppState.unlockedWeek, data.existing_worksheet_submission);
         } else {
@@ -538,12 +539,26 @@
       }
     }
 
-    function proceedToWorksheet() {
+    async function proceedToWorksheet() {
       document.getElementById("quizSection").classList.add("hidden");
-      loadWorksheetScreen(AppState.unlockedWeek, null);
+      const existingSub = await fetchWorksheetSubmission(AppState.unlockedWeek);
+      loadWorksheetScreen(AppState.unlockedWeek, existingSub);
     }
 
-    function loadWorksheetScreen(weekNum, existingSub) {
+    // Dynamic fetch of saved draft data from backend
+    async function fetchWorksheetSubmission(weekNum) {
+      if (!AppState.user || AppState.user.isFacilitator) return null;
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=get_worksheet_submission&email=${encodeURIComponent(AppState.user.email)}&week_number=${weekNum}`);
+        const data = await res.json();
+        return data.success ? data.submission : null;
+      } catch (err) {
+        console.warn("Could not load draft from backend:", err);
+        return null;
+      }
+    }
+
+    async function loadWorksheetScreen(weekNum, existingSub) {
       document.getElementById("quizSection").classList.add("hidden");
       document.getElementById("facilitatorSection").classList.add("hidden");
       document.getElementById("worksheetSection").classList.remove("hidden");
@@ -560,13 +575,20 @@
         dropdown.appendChild(opt);
       }
 
+      if (!existingSub && AppState.user && !AppState.user.isFacilitator) {
+        existingSub = await fetchWorksheetSubmission(weekNum);
+      }
+
       renderWeekWorksheet(weekNum, existingSub);
     }
 
-    function onWeekSelectionChanged(selectedVal) {
-      renderWeekWorksheet(parseInt(selectedVal, 10), null);
+    async function onWeekSelectionChanged(selectedVal) {
+      const weekNum = parseInt(selectedVal, 10);
+      const existingSub = await fetchWorksheetSubmission(weekNum);
+      renderWeekWorksheet(weekNum, existingSub);
     }
 
+    // Dynamic renderer with state restoration for multi-day incremental logging
     function renderWeekWorksheet(weekNum, existingData) {
       AppState.currentSelectedWeek = weekNum;
       const weekConfig = AppState.curriculum.find(c => parseInt(c.week_number, 10) === weekNum) || {
@@ -594,6 +616,30 @@
       document.getElementById("labelQ1").innerText = weekConfig.reflection_q1;
       document.getElementById("labelQ2").innerText = weekConfig.reflection_q2;
 
+      // 1. Restore Section A Checkboxes
+      document.getElementById("chkVerse1").checked = existingData 
+        ? String(existingData.verse_check_1_passed).toLowerCase() === "true" 
+        : false;
+      document.getElementById("chkVerse2").checked = existingData 
+        ? String(existingData.verse_check_2_passed).toLowerCase() === "true" 
+        : false;
+
+      // 2. Restore Section C Textareas
+      document.getElementById("ansQ1").value = existingData ? (existingData.reflection_q1 || "") : "";
+      document.getElementById("ansQ2").value = existingData ? (existingData.reflection_q2 || "") : "";
+
+      // 3. Parse Saved Daily Matrix Data
+      let savedMatrix = null;
+      if (existingData && existingData.audit_matrix_json) {
+        try {
+          savedMatrix = typeof existingData.audit_matrix_json === "string" 
+            ? JSON.parse(existingData.audit_matrix_json) 
+            : existingData.audit_matrix_json;
+        } catch(e) {
+          console.warn("Could not parse saved matrix:", e);
+        }
+      }
+
       let rows = [];
       try { rows = JSON.parse(weekConfig.tracker_rows_json); } catch(e) { rows = ["Pillar 1", "Pillar 2"]; }
 
@@ -612,25 +658,33 @@
 
         DAYS.forEach(day => {
           if (trackerType === 'rating_1_to_5') {
-            AppState.matrixState[rowName][day] = 0;
+            // Restore saved score if present, else default to 0
+            const savedVal = (savedMatrix && savedMatrix[rowName] && savedMatrix[rowName][day] !== undefined)
+              ? parseInt(savedMatrix[rowName][day], 10)
+              : 0;
+
+            AppState.matrixState[rowName][day] = savedVal;
+
             html += `
               <td class="py-2 px-1 text-center">
                 <select onchange="updateMatrixScore('${rowName}', '${day}', this.value)" class="bg-slate-900 border border-slate-700 text-amber-400 rounded-lg p-1 text-xs focus:outline-none">
-                  <option value="0" selected>0</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
+                  ${[0, 1, 2, 3, 4, 5].map(v => `<option value="${v}" ${v === savedVal ? 'selected' : ''}>${v}</option>`).join('')}
                 </select>
               </td>`;
           } else {
-            AppState.matrixState[rowName][day] = 'fail';
+            // Restore saved binary state if present, else default to 'fail' (Red X)
+            const savedStatus = (savedMatrix && savedMatrix[rowName] && savedMatrix[rowName][day])
+              ? savedMatrix[rowName][day]
+              : 'fail';
+
+            AppState.matrixState[rowName][day] = savedStatus;
+            const isPass = savedStatus === 'pass';
+
             html += `
               <td class="py-2 px-1 text-center">
                 <button type="button" id="btn_${rIdx}_${day}" onclick="toggleBinaryGate('${rowName}', '${day}', this)"
-                  class="matrix-btn w-7 h-7 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40">
-                  ✖
+                  class="matrix-btn w-7 h-7 rounded-lg text-xs font-bold ${isPass ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'}">
+                  ${isPass ? '✔' : '✖'}
                 </button>
               </td>`;
           }
@@ -642,8 +696,9 @@
 
       calculateMatrixAverage(trackerType);
 
+      // 4. Restore Dynamic Vow Module with saved statement
       AppState.currentVowTemplate = weekConfig.vow_template || "";
-      renderDynamicVow(AppState.currentVowTemplate, weekConfig.vow_fields_config_json);
+      renderDynamicVow(AppState.currentVowTemplate, weekConfig.vow_fields_config_json, existingData ? existingData.vow_statement : null);
     }
 
     function updateMatrixScore(row, day, val) {
@@ -691,7 +746,7 @@
       }
     }
 
-    function renderDynamicVow(templateStr, fieldsJson) {
+    function renderDynamicVow(templateStr, fieldsJson, savedVowStatement) {
       let fields = [];
       try { fields = typeof fieldsJson === "string" ? JSON.parse(fieldsJson) : fieldsJson; } catch(e) { fields = []; }
 
@@ -701,7 +756,7 @@
 
       if (!fields || !fields.length) {
         container.innerHTML = `<span class="italic text-slate-400">Fixed Vow</span>`;
-        updateVowPreview();
+        document.getElementById("vowPreviewBox").innerText = savedVowStatement ? `"${savedVowStatement}"` : `"${templateStr}"`;
         return;
       }
 
@@ -719,7 +774,11 @@
         container.appendChild(wrap);
       });
 
-      updateVowPreview();
+      if (savedVowStatement) {
+        document.getElementById("vowPreviewBox").innerText = `"${savedVowStatement}"`;
+      } else {
+        updateVowPreview();
+      }
     }
 
     function handleVowFieldChange(fieldId, value) {
